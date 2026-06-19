@@ -1,0 +1,10 @@
+Event                       ,   Total, %Total, CurAvg/s
+kvm_exit                    , 8022900,   14.6,   210910
+kvm_exit(MSR_WRITE)         , 7786546,   97.1,   206902
+kvm_exit(EXTERNAL_INTERRUPT),  119354,    1.5,     2002
+kvm_exit(PREEMPTION_TIMER)  ,  114949,    1.4,     2001
+kvm_exit(EPT_MISCONFIG)     ,     194,    0.0,        4
+kvm_exit(MSR_READ)          ,      75,    0.0,        1
+kvm_exit(IO_INSTRUCTION)    ,    1278,    0.0,        0
+kvm_exit(CPUID)             ,     240,    0.0,        0
+kvm_exit(EPT_VIOLATION)     ,     157,    0.0,        0
