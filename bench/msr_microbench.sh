@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Default variables
-ITERATIONS=50
+ITERATIONS=30
 OUT_FILE="microbench_results.csv"
-CORE_PIN=4
+CORE_PIN=1
 AUTO_MAKE=0
+
+# 2 = nested, 1 = normal
+LEVEL=2
 
 # The usage function
 usage() {
@@ -15,10 +18,11 @@ usage() {
     echo -e "  -c, --core <N>         Physical core to pin the QEMU process (default: $CORE_PIN)"
     echo -e "  -m, --make             Automatically run './configure' and 'make' before testing"
     echo -e "  -o, --out <file>       Output CSV file name (default: $OUT_FILE)"
+    echo -e "  -L, --level <N>          Level of virtualization (1 for L1, 2 for L2) (default: $LEVEL)"
     echo -e "  -h, --help             Show this help message and exit"
     echo -e ""
     echo -e "Example:"
-    echo -e "  $0 -m -i 100 -c 2 /host/kvm-unit-tests"
+    echo -e "  $0 -m --smp 4 --mem 2G -i 100 -c 2 /host/kvm-unit-tests"
 }
 
 # Parse command line arguments
@@ -28,6 +32,7 @@ while [[ "$1" != "" ]]; do
         -c | --core )           shift; CORE_PIN=$1 ;;
         -m | --make )           AUTO_MAKE=1 ;;
         -o | --out )            shift; OUT_FILE=$1 ;;
+        -L | --level )          shift; LEVEL=$1 ;;
         -h | --help )           usage; exit 0 ;;
         -* )                    echo -e "[!] Error: Unknown option $1\n"; usage; exit 1 ;;
         * )                     
@@ -68,6 +73,19 @@ if [ $AUTO_MAKE -eq 1 ]; then
     fi
 fi
 
+if [[ $LEVEL -eq 1 ]]; then
+    CORES=8
+    RAM="4G"
+    BIOS=""
+elif [[ $LEVEL -eq 2 ]]; then
+    CORES=4
+    RAM="2G"
+    BIOS="-L /host/qemu/pc-bios"
+else
+    echo "[!] Error: Invalid LEVEL specified. Use 1 for L1 or 2 for L2."
+    exit 1
+fi
+
 # The tests to run
 PMU_TESTS=(
     "r_perf_capabilities"
@@ -82,8 +100,9 @@ PMU_TESTS=(
 
 echo "========================================"
 echo " Starting PMU / LBR Microbenchmarks"
+echo " VM Specs:   $CORES vCPUs, $RAM RAM"
 echo " Iterations: $ITERATIONS | Core Pin: $CORE_PIN"
-echo " Output: $OUT_FILE"
+echo " Output:     $OUT_FILE"
 echo "========================================"
 
 # Initialize CSV header (overwrites old file)
@@ -97,8 +116,8 @@ for test in "${PMU_TESTS[@]}"; do
         # Print a dot to show progress
         echo -n "."
 
-        # Run QEMU pinned to a single core, suppress QEMU stderr noise
-        OUTPUT=$(taskset -c $CORE_PIN ./x86-run x86/vmexit.flat -cpu host,pmu=on -append "$test" 2>/dev/null)
+        # Run QEMU pinned to a single core, passing in the dynamic memory and SMP flags
+        OUTPUT=$(taskset -c $CORE_PIN ./x86-run x86/vmexit.flat $BIOS -m "$RAM" -smp "$CORES" -cpu host,pmu=on -append "$test" 2>/dev/null)
         
         # EXTRACT DATA:
         # Search for the line that starts EXACTLY with the test name
