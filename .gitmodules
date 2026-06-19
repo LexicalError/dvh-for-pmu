@@ -1,0 +1,6 @@
+[submodule "linux"]
+	path = linux
+	url = git@github.com:jianshuohuang/linux.git
+[submodule "bench/kvm-unit-tests"]
+	path = bench/kvm-unit-tests
+	url = git@github.com:LexicalError/vm2026-kvm-unit-tests.git
