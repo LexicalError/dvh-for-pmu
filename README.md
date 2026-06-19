@@ -56,15 +56,37 @@ cp l1.img l2.img
 
 ## Running VMs
 
-Run L1 or L2:
+**Run L1:**
 ```bash
 cd scripts
 ./run-l1.sh -p ../ -k <kernel>
 ```
 inside there should be a `/host` that shares whatever you passed into the `-p` argument.
 
-Note that in L2, you will need to link the compiled qemu:
+**Run L2:**
+Note that in L1, you will need to link the compiled qemu:
 ```bash
 ln -s /host/qemu/build/qemu-system-x86_64 /usr/local/bin/qemu-system-x86_64
 ```
-And install the kernel modules.
+You will also need to install the kvm kernel modules, they can be copied out with the `cp_out.sh` script after compiling the kernel:
+
+```bash
+cd /linux
+../cp_out.sh ../img
+```
+
+Then you can install them inside L1 with the `set_pmu_pv.sh` script
+
+```bash
+cd /host/scripts
+./set_pmu_pv.sh 1 # Enable DVH PMU Passthrough, 0 for disable
+```
+
+Finally:
+
+```bash
+cd /host/scripts
+./run-l2.sh -p ../ -k <kernel>
+```
+
+(You will want to setup ssh for L1 too)
