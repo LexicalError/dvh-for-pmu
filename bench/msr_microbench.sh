@@ -3,7 +3,7 @@
 # Default variables
 ITERATIONS=30
 OUT_FILE="microbench_results.csv"
-CORE_PIN=1
+CORE_PIN=0
 AUTO_MAKE=0
 
 # 2 = nested, 1 = normal
@@ -74,11 +74,11 @@ if [ $AUTO_MAKE -eq 1 ]; then
 fi
 
 if [[ $LEVEL -eq 1 ]]; then
-    CORES=8
+    CORES=4
     RAM="4G"
     BIOS=""
 elif [[ $LEVEL -eq 2 ]]; then
-    CORES=4
+    CORES=2
     RAM="2G"
     BIOS="-L /host/qemu/pc-bios"
 else
@@ -117,7 +117,7 @@ for test in "${PMU_TESTS[@]}"; do
         echo -n "."
 
         # Run QEMU pinned to a single core, passing in the dynamic memory and SMP flags
-        OUTPUT=$(taskset -c $CORE_PIN ./x86-run x86/vmexit.flat $BIOS -m "$RAM" -smp "$CORES" -cpu host,pmu=on -append "$test" 2>/dev/null)
+        OUTPUT=$(taskset -c ${CORE_PIN}-$((CORE_PIN + CORES - 1)) ./x86-run x86/vmexit.flat $BIOS -m "$RAM" -smp "$CORES" -cpu host,pmu=on -append "$test" 2>/dev/null)
         
         # EXTRACT DATA:
         # Search for the line that starts EXACTLY with the test name

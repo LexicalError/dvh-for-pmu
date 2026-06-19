@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONSOLE=mon:stdio
-SMP=4
+SMP=2
 MEMSIZE="2G"
 KERNEL="../img/l2_Image"
 FS=../img/l2.img
@@ -104,3 +104,27 @@ qemu-system-x86_64 -nographic \
         -netdev user,id=net0,hostfwd=tcp::2222-:22 \
         -device virtio-net-pci,netdev=net0,mac=de:ad:be:ef:41:49 \
         ${SHARE_ARGS}
+
+
+sleep 1
+
+# Pin each vCPU thread to its own physical core
+# CORE_PIN is your starting core (e.g. 2, to leave 0-1 for the host)
+CORE_PIN=0
+CORE=$CORE_PIN
+
+VCPU_TIDS=$(ps -T -p $QEMU_PID | awk '/CPU [0-9]\/KVM/{print $2}')
+
+if [[ -z "$VCPU_TIDS" ]]; then
+    echo "[!] Warning: Could not find vCPU threads. Falling back to taskset on whole process."
+    taskset -cp ${CORE_PIN}-$((CORE_PIN + SMP - 1)) $QEMU_PID
+else
+    echo "[*] Pinning vCPU threads to physical cores:"
+    for tid in $VCPU_TIDS; do
+        taskset -cp $CORE $tid
+        echo "    Thread $tid -> Core $CORE"
+        CORE=$((CORE + 1))
+    done
+fi
+
+wait $QEMU_PID
