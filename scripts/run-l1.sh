@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CONSOLE=mon:stdio
-SMP=8
+SMP=4
 MEMSIZE="4G"
-KERNEL="../img/l1_dvh-idle_Image"
+KERNEL="../img/l1_dvh-pmu-pv_Image"
 FS=../img/l1.img
 CMDLINE="earlyprintk=serial,ttyS0,115200"
 SHARE_DIR="$PWD"
@@ -100,7 +100,7 @@ qemu-system-x86_64 -nographic \
         -device virtio-blk-pci,drive=vda \
         -display none \
         -serial $CONSOLE \
-        -append "console=ttyS0 root=/dev/vda rw $CMDLINE" \
+        -append "console=ttyS0 root=/dev/vda1 rw $CMDLINE" \
         -netdev user,id=net0,hostfwd=tcp::2222-:22 \
         -device virtio-net-pci,netdev=net0,mac=de:ad:be:ef:41:49 \
         ${SHARE_ARGS}
