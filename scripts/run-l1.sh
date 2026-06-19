@@ -103,7 +103,7 @@ qemu-system-x86_64 -nographic \
         -append "console=ttyS0 root=/dev/vda1 rw $CMDLINE" \
         -netdev user,id=net0,hostfwd=tcp::2222-:22 \
         -device virtio-net-pci,netdev=net0,mac=de:ad:be:ef:41:49 \
-        ${SHARE_ARGS}
+        ${SHARE_ARGS} &
 
 sleep 1
 

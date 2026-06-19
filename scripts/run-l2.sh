@@ -93,7 +93,7 @@ if [[ -n "$SHARE_DIR" ]]; then
         SHARE_ARGS="-fsdev local,path=${SHARE_DIR},security_model=mapped-xattr,id=fsdev0 -device virtio-9p-pci,fsdev=fsdev0,mount_tag=hostshare"
 fi
 
-qemu-system-x86_64 -nographic \
+qemu-system-x86_64 -nographic -L /host/qemu/pc-bios \
         -machine q35 -m ${MEMSIZE} -cpu host,pmu=on -smp ${SMP} -enable-kvm \
         -kernel ${KERNEL} \
         -drive if=none,file=$FS,id=vda,cache=none,format=raw \
@@ -103,7 +103,7 @@ qemu-system-x86_64 -nographic \
         -append "console=ttyS0 root=/dev/vda1 rw $CMDLINE" \
         -netdev user,id=net0,hostfwd=tcp::2222-:22 \
         -device virtio-net-pci,netdev=net0,mac=de:ad:be:ef:41:49 \
-        ${SHARE_ARGS}
+        ${SHARE_ARGS} &
 
 
 sleep 1
