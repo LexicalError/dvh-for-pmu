@@ -98,10 +98,12 @@ cd /host/scripts
 Use `./msr_microbench.sh`, you will need to compile `kvm-unit-tests` first and point the directory to the script, you may need to clone `kvm-unit-tests` twice to build it for L0 and L1.
 Running the script on L0 launches a L1 VM and tests MSR microbenches there. Running the script in L1 launches a L2 VM and tests inside.
 
-### Perf
+### Perf Macrobench
 
 To use perf:
 ```bash
 cd linux/tools/perf
 make
 ```
+
+`perf_bench.sh` runs the macrobench workload and should be run in L2.
